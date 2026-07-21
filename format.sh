@@ -1,4 +1,3 @@
 set -e
 
-cd ../..
-julia tools/juliapkg/scripts/format.jl
+julia scripts/format.jl

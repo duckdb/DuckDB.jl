@@ -1,14 +1,21 @@
 #!/usr/bin/env bash
-# Regenerates tools/juliapkg/src/api.jl from api_spec/v1 via the capigen Julia
-# adapter, then runs JuliaFormatter for the local dev loop. The raw adapter output
-# is already formatter clean, so the format step is a no-op; CI regenerates
-# without Julia (scripts/capi_v1_julia_regen.sh) and checks for drift.
+# Regenerates src/api.jl and src/ctypes_generated.jl from the DuckDB C API v1
+# spec via the capigen Julia adapter, then runs JuliaFormatter.
+#
+# The spec (api_spec/v1) lives in the DuckDB C API repo, not here. Point SPEC_DIR
+# at a checkout of it. capigen is pulled from PyPI via uv (see pyproject.toml).
 set -euo pipefail
 
-cd "$(git rev-parse --show-toplevel)"
+SPEC_DIR="${SPEC_DIR:-${1:-}}"
+if [[ -z "$SPEC_DIR" || ! -d "$SPEC_DIR" ]]; then
+  echo "Usage: SPEC_DIR=/path/to/api_spec/v1 ./update_api.sh   (or pass it as arg 1)"
+  echo "SPEC_DIR must point at a checkout of the DuckDB C API v1 spec."
+  exit 1
+fi
 
-echo "Regenerating api.jl..."
-scripts/capi_v1_julia_regen.sh
+cd "$(git rev-parse --show-toplevel)"
+echo "Regenerating api.jl + ctypes_generated.jl from $SPEC_DIR ..."
+PYTHONPATH=scripts uv run capigen julia_adapter --spec-dir "$SPEC_DIR" -o src/api.jl
 
 echo "Formatting..."
-cd tools/juliapkg && ./format.sh
+./format.sh

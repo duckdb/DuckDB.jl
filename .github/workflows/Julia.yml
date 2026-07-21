@@ -1,0 +1,43 @@
+name: Julia
+
+# CI for the DuckDB.jl package: JuliaFormatter, the package test suite (against
+# DuckDB_jll, so no libduckdb build is needed), and the Python codegen adapter
+# tests (capigen from PyPI, generates src/api.jl and src/ctypes_generated.jl).
+
+on:
+  push:
+    branches: [main]
+  pull_request:
+
+concurrency:
+  group: julia-${{ github.ref }}
+  cancel-in-progress: true
+
+jobs:
+  julia:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: julia-actions/setup-julia@v2
+        with:
+          version: '1.10'
+      - uses: julia-actions/cache@v2
+      # Format first: a fresh checkout is clean, which format_check.sh requires.
+      - name: Format check
+        run: |
+          julia -e 'import Pkg; Pkg.add("JuliaFormatter")'
+          ./format_check.sh
+      - name: Test (DuckDB_jll)
+        env:
+          JULIA_NUM_THREADS: '2'
+        run: julia --project -e 'import Pkg; Pkg.test()'
+
+  codegen:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: astral-sh/setup-uv@v3
+      - name: Provision codegen env
+        run: uv sync --group dev
+      - name: Test the Julia adapter
+        run: uv run --group dev pytest scripts -q
