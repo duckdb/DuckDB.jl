@@ -136,12 +136,17 @@ the `api_spec/v1` capigen spec. That keeps the wrapper complete and consistent w
 the C API. The generated files are committed, so building and using the package
 never needs the spec.
 
-The spec lives in the [DuckDB repository](https://github.com/duckdb/duckdb) under ./api_spec, not here. To regenerate, point
-`SPEC_DIR` at a checkout of it and run `update_api.sh`, which regenerates both
-files and then runs JuliaFormatter:
+The spec lives in the [DuckDB repository](https://github.com/duckdb/duckdb) under `./api_spec`, not here. To regenerate, run `update_api.sh`, which fetches the spec, regenerates both files, and then runs JuliaFormatter:
 
 ```bash
-SPEC_DIR=/path/to/api_spec/v1 ./update_api.sh
+./update_api.sh
+```
+
+By default it fetches `api_spec` from `duckdb/duckdb`. Override the source with `SPEC_REF` (a tag or branch) and `SPEC_REPO`, or set `SPEC_DIR` to a local `api_spec/v1` checkout to skip fetching:
+
+```bash
+SPEC_REF=v1.5.4 ./update_api.sh                 # pin a DuckDB version
+SPEC_DIR=/path/to/api_spec/v1 ./update_api.sh   # use a local checkout
 ```
 
 The raw adapter output is authored to be JuliaFormatter clean, so the committed

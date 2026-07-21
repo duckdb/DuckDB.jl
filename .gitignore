@@ -2,3 +2,4 @@ Manifest.toml
 .venv/
 __pycache__/
 *.pyc
+.spec/

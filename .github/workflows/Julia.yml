@@ -32,7 +32,8 @@ jobs:
           JULIA_NUM_THREADS: '2'
         run: julia --project -e 'import Pkg; Pkg.test()'
 
-  codegen:
+  codegen-adapter-test:
+    name: codegen adapter test
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@v5
