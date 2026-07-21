@@ -1,22 +1,14 @@
+#!/usr/bin/env bash
+# Regenerates tools/juliapkg/src/api.jl from api_spec/v1 via the capigen Julia
+# adapter, then runs JuliaFormatter for the local dev loop. The raw adapter output
+# is already formatter clean, so the format step is a no-op; CI regenerates
+# without Julia (scripts/capi_v1_julia_regen.sh) and checks for drift.
 set -euo pipefail
 
+cd "$(git rev-parse --show-toplevel)"
 
-echo "Updating api.jl..."
-
-OLD_API_FILE=tools/juliapkg/src/api_old.jl
-ORIG_DIR=$(pwd)
-GIR_ROOT_DIR=$(git rev-parse --show-toplevel)
-cd "$GIR_ROOT_DIR"
-
-
-
-# Generate the Julia API
-python tools/juliapkg/scripts/generate_c_api_julia.py \
-    --auto-1-index \
-    --capi-dir src/include/duckdb/main/capi/header_generation \
-    tools/juliapkg/src/api.jl
-
+echo "Regenerating api.jl..."
+scripts/capi_v1_julia_regen.sh
 
 echo "Formatting..."
-cd "$ORIG_DIR"
-./format.sh
+cd tools/juliapkg && ./format.sh

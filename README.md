@@ -136,11 +136,19 @@ Just as mentioned before, to attach lldb to this, you'll have to replace the `ju
 
 ### Automatic API generation
 
-A base Julia wrapper around the C-API is generated using the `update_api.sh` script (which internally calls the python script `scripts/generate_c_api_julia.py`). This script uses the definitions of DuckDB C-API to automatically generate the Julia wrapper that is complete and consistent with the C-API. To generate the wrapper, just run:
+A base Julia wrapper around the C-API is generated from the `api_spec/v1` capigen
+spec by the `julia_adapter` capigen adapter (`scripts/julia_adapter.py`), which
+keeps the wrapper complete and consistent with the C-API. The `update_api.sh`
+script regenerates `src/api.jl` and then runs JuliaFormatter. To generate the
+wrapper, just run:
 
 ```bash
 ./update_api.sh
 ```
+
+The raw adapter output is authored to be JuliaFormatter clean, so `src/api.jl` is
+the canonical generated file. A pre-commit hook regenerates it from the spec
+(without Julia) and CI fails on any drift.
 
 
 ### Submitting a New Package

@@ -17,6 +17,7 @@ struct StreamResult <: ResultType end
 
 include("helper.jl")
 include("exceptions.jl")
+include("ctypes_generated.jl")
 include("ctypes.jl")
 include("api.jl")
 include("api_helper.jl")

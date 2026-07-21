@@ -1,0 +1,32 @@
+schema_version: "0.4"
+versions:
+  - "1.2.0"
+prefix: "duckdb_"
+suffixes:
+  handles: ""
+  callbacks: ""
+  aliases: ""
+primitives:
+  - name: void
+    c_type: void
+  - name: opaque
+    c_type: void
+  - name: char
+    c_type: char
+  - name: bool
+    c_type: bool
+  - name: idx
+    c_type: idx_t
+    underlying: uint64_t
+  - name: i32
+    c_type: int32_t
+  - name: state
+    c_type: duckdb_state
+options:
+  extension:
+    unstable_guard: SAMPLE_API_UNSTABLE
+    create_method: CreateSampleAPI
+    api_version: "v1.2.0"
+    version_macro_prefix: SAMPLE_API_VERSION
+    internal_include: sample.h
+    exclude: []

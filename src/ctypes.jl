@@ -1,203 +1,25 @@
 const STRING_INLINE_LENGTH = 12 # length of the inline string in duckdb_string_t
 const idx_t = UInt64 # DuckDB index type
 
-const duckdb_aggregate_combine = Ptr{Cvoid}
-const duckdb_aggregate_destroy = Ptr{Cvoid}
-const duckdb_aggregate_finalize = Ptr{Cvoid}
-const duckdb_aggregate_function = Ptr{Cvoid}
-const duckdb_aggregate_function_set = Ptr{Cvoid}
-const duckdb_aggregate_init = Ptr{Cvoid}
-const duckdb_aggregate_state_size = Ptr{Cvoid}
-const duckdb_aggregate_update = Ptr{Cvoid}
-const duckdb_appender = Ptr{Cvoid}
-const duckdb_arrow = Ptr{Cvoid}
-const duckdb_arrow_array = Ptr{Cvoid}
-const duckdb_arrow_schema = Ptr{Cvoid}
-const duckdb_arrow_stream = Ptr{Cvoid}
-const duckdb_bind_info = Ptr{Cvoid}
-const duckdb_cast_function = Ptr{Cvoid}
-const duckdb_cast_function_ptr = Ptr{Cvoid}
-const duckdb_client_context = Ptr{Cvoid}
-const duckdb_config = Ptr{Cvoid}
-const duckdb_connection = Ptr{Cvoid}
-const duckdb_create_type_info = Ptr{Cvoid}
-const duckdb_data_chunk = Ptr{Cvoid}
-const duckdb_database = Ptr{Cvoid}
-const duckdb_delete_callback = Ptr{Cvoid}
-const duckdb_extracted_statements = Ptr{Cvoid}
-const duckdb_function_info = Ptr{Cvoid}
-const duckdb_init_info = Ptr{Cvoid}
-const duckdb_instance_cache = Ptr{Cvoid}
-const duckdb_logical_type = Ptr{Cvoid}
-const duckdb_pending_result = Ptr{Cvoid}
-const duckdb_prepared_statement = Ptr{Cvoid}
-const duckdb_profiling_info = Ptr{Cvoid}
-const duckdb_replacement_callback = Ptr{Cvoid}
-const duckdb_replacement_scan_info = Ptr{Cvoid}
-const duckdb_scalar_function = Ptr{Cvoid}
-const duckdb_scalar_function_bind = Ptr{Cvoid}
-const duckdb_scalar_function_set = Ptr{Cvoid}
-const duckdb_selection_vector = Ptr{Cvoid}
-const duckdb_table_description = Ptr{Cvoid}
-const duckdb_table_function = Ptr{Cvoid}
-const duckdb_table_function_ptr = Ptr{Cvoid}
-const duckdb_table_function_bind = Ptr{Cvoid}
-const duckdb_table_function_init = Ptr{Cvoid}
-const duckdb_task_state = Ptr{Cvoid}
-const duckdb_value = Ptr{Cvoid}
-const duckdb_vector = Ptr{Cvoid}
+# Handles, callbacks, and enums are generated into ctypes_generated.jl (included
+# before this file). This file keeps the hand-laid primitives, structs, type maps,
+# and conversions, plus a few types below that the spec cannot express mechanically.
 
+# Arrow C Data Interface structs. The spec declares ArrowSchema/ArrowArray as opaque
+# primitives with no fields; api.jl only takes their address (Ptr/Ref) in the arrow
+# functions, so empty structs are enough for the module to load.
+struct ArrowSchema end
+struct ArrowArray end
 
 
 const duckdb_state = Cint;
 const DuckDBSuccess = 0;
 const DuckDBError = 1;
 
-const duckdb_pending_state = Cint;
-const DUCKDB_PENDING_RESULT_READY = 0;
-const DUCKDB_PENDING_RESULT_NOT_READY = 1;
-const DUCKDB_PENDING_ERROR = 2;
-const DUCKDB_PENDING_NO_TASKS_AVAILABLE = 3;
-
-@enum DUCKDB_RESULT_TYPE_::Cint begin
-    DUCKDB_RESULT_TYPE_INVALID = 0
-    DUCKDB_RESULT_TYPE_CHANGED_ROWS = 1
-    DUCKDB_RESULT_TYPE_NOTHING = 2
-    DUCKDB_RESULT_TYPE_QUERY_RESULT = 3
-end
-const duckdb_result_type = DUCKDB_RESULT_TYPE_;
-
-
-@enum DUCKDB_STATEMENT_TYPE_::Cint begin
-    DUCKDB_STATEMENT_TYPE_INVALID = 0
-    DUCKDB_STATEMENT_TYPE_SELECT = 1
-    DUCKDB_STATEMENT_TYPE_INSERT = 2
-    DUCKDB_STATEMENT_TYPE_UPDATE = 3
-    DUCKDB_STATEMENT_TYPE_EXPLAIN = 4
-    DUCKDB_STATEMENT_TYPE_DELETE = 5
-    DUCKDB_STATEMENT_TYPE_PREPARE = 6
-    DUCKDB_STATEMENT_TYPE_CREATE = 7
-    DUCKDB_STATEMENT_TYPE_EXECUTE = 8
-    DUCKDB_STATEMENT_TYPE_ALTER = 9
-    DUCKDB_STATEMENT_TYPE_TRANSACTION = 10
-    DUCKDB_STATEMENT_TYPE_COPY = 11
-    DUCKDB_STATEMENT_TYPE_ANALYZE = 12
-    DUCKDB_STATEMENT_TYPE_VARIABLE_SET = 13
-    DUCKDB_STATEMENT_TYPE_CREATE_FUNC = 14
-    DUCKDB_STATEMENT_TYPE_DROP = 15
-    DUCKDB_STATEMENT_TYPE_EXPORT = 16
-    DUCKDB_STATEMENT_TYPE_PRAGMA = 17
-    DUCKDB_STATEMENT_TYPE_VACUUM = 18
-    DUCKDB_STATEMENT_TYPE_CALL = 19
-    DUCKDB_STATEMENT_TYPE_SET = 20
-    DUCKDB_STATEMENT_TYPE_LOAD = 21
-    DUCKDB_STATEMENT_TYPE_RELATION = 22
-    DUCKDB_STATEMENT_TYPE_EXTENSION = 23
-    DUCKDB_STATEMENT_TYPE_LOGICAL_PLAN = 24
-    DUCKDB_STATEMENT_TYPE_ATTACH = 25
-    DUCKDB_STATEMENT_TYPE_DETACH = 26
-    DUCKDB_STATEMENT_TYPE_MULTI = 27
-end
-const duckdb_statement_type = DUCKDB_STATEMENT_TYPE_
-
-@enum DUCKDB_ERROR_TYPE_::Cint begin
-    DUCKDB_ERROR_INVALID = 0
-    DUCKDB_ERROR_OUT_OF_RANGE = 1
-    DUCKDB_ERROR_CONVERSION = 2
-    DUCKDB_ERROR_UNKNOWN_TYPE = 3
-    DUCKDB_ERROR_DECIMAL = 4
-    DUCKDB_ERROR_MISMATCH_TYPE = 5
-    DUCKDB_ERROR_DIVIDE_BY_ZERO = 6
-    DUCKDB_ERROR_OBJECT_SIZE = 7
-    DUCKDB_ERROR_INVALID_TYPE = 8
-    DUCKDB_ERROR_SERIALIZATION = 9
-    DUCKDB_ERROR_TRANSACTION = 10
-    DUCKDB_ERROR_NOT_IMPLEMENTED = 11
-    DUCKDB_ERROR_EXPRESSION = 12
-    DUCKDB_ERROR_CATALOG = 13
-    DUCKDB_ERROR_PARSER = 14
-    DUCKDB_ERROR_PLANNER = 15
-    DUCKDB_ERROR_SCHEDULER = 16
-    DUCKDB_ERROR_EXECUTOR = 17
-    DUCKDB_ERROR_CONSTRAINT = 18
-    DUCKDB_ERROR_INDEX = 19
-    DUCKDB_ERROR_STAT = 20
-    DUCKDB_ERROR_CONNECTION = 21
-    DUCKDB_ERROR_SYNTAX = 22
-    DUCKDB_ERROR_SETTINGS = 23
-    DUCKDB_ERROR_BINDER = 24
-    DUCKDB_ERROR_NETWORK = 25
-    DUCKDB_ERROR_OPTIMIZER = 26
-    DUCKDB_ERROR_NULL_POINTER = 27
-    DUCKDB_ERROR_IO = 28
-    DUCKDB_ERROR_INTERRUPT = 29
-    DUCKDB_ERROR_FATAL = 30
-    DUCKDB_ERROR_INTERNAL = 31
-    DUCKDB_ERROR_INVALID_INPUT = 32
-    DUCKDB_ERROR_OUT_OF_MEMORY = 33
-    DUCKDB_ERROR_PERMISSION = 34
-    DUCKDB_ERROR_PARAMETER_NOT_RESOLVED = 35
-    DUCKDB_ERROR_PARAMETER_NOT_ALLOWED = 36
-    DUCKDB_ERROR_DEPENDENCY = 37
-    DUCKDB_ERROR_HTTP = 38
-    DUCKDB_ERROR_MISSING_EXTENSION = 39
-    DUCKDB_ERROR_AUTOLOAD = 40
-    DUCKDB_ERROR_SEQUENCE = 41
-    DUCKDB_INVALID_CONFIGURATION = 42
-end
-const duckdb_error_type = DUCKDB_ERROR_TYPE_
-
-@enum DUCKDB_CAST_MODE_::Cint begin
-    DUCKDB_CAST_NORMAL = 0
-    DUCKDB_CAST_TRY = 1
-end
-const duckdb_cast_mode = DUCKDB_CAST_MODE_
-
-@enum DUCKDB_TYPE_::Cint begin
-    DUCKDB_TYPE_INVALID = 0
-    DUCKDB_TYPE_BOOLEAN = 1
-    DUCKDB_TYPE_TINYINT = 2
-    DUCKDB_TYPE_SMALLINT = 3
-    DUCKDB_TYPE_INTEGER = 4
-    DUCKDB_TYPE_BIGINT = 5
-    DUCKDB_TYPE_UTINYINT = 6
-    DUCKDB_TYPE_USMALLINT = 7
-    DUCKDB_TYPE_UINTEGER = 8
-    DUCKDB_TYPE_UBIGINT = 9
-    DUCKDB_TYPE_FLOAT = 10
-    DUCKDB_TYPE_DOUBLE = 11
-    DUCKDB_TYPE_TIMESTAMP = 12
-    DUCKDB_TYPE_DATE = 13
-    DUCKDB_TYPE_TIME = 14
-    DUCKDB_TYPE_INTERVAL = 15
-    DUCKDB_TYPE_HUGEINT = 16
-    DUCKDB_TYPE_UHUGEINT = 32
-    DUCKDB_TYPE_VARCHAR = 17
-    DUCKDB_TYPE_BLOB = 18
-    DUCKDB_TYPE_DECIMAL = 19
-    DUCKDB_TYPE_TIMESTAMP_S = 20
-    DUCKDB_TYPE_TIMESTAMP_MS = 21
-    DUCKDB_TYPE_TIMESTAMP_NS = 22
-    DUCKDB_TYPE_ENUM = 23
-    DUCKDB_TYPE_LIST = 24
-    DUCKDB_TYPE_STRUCT = 25
-    DUCKDB_TYPE_MAP = 26
-    DUCKDB_TYPE_UUID = 27
-    DUCKDB_TYPE_UNION = 28
-    DUCKDB_TYPE_BIT = 29
-    DUCKDB_TYPE_TIME_TZ = 30
-    DUCKDB_TYPE_TIMESTAMP_TZ = 31
-    DUCKDB_TYPE_ARRAY = 33
-    DUCKDB_TYPE_ANY = 34
-    DUCKDB_TYPE_BIGNUM = 35
-    DUCKDB_TYPE_SQLNULL = 36
-    DUCKDB_TYPE_STRING_LITERAL = 37
-    DUCKDB_TYPE_INTEGER_LITERAL = 38
-    DUCKDB_TYPE_TIME_NS = 39
-    DUCKDB_TYPE_GEOMETRY = 40
-    DUCKDB_TYPE_TIMESTAMP_TZ_NS = 42
-end
-const DUCKDB_TYPE = DUCKDB_TYPE_
+# Back-compat alias. The generated enum is named consistently `duckdb_type` (like
+# the other enums); this keeps the historical uppercase `DUCKDB_TYPE` spelling
+# working for any code that used it. Not exported.
+const DUCKDB_TYPE = duckdb_type
 
 
 """
@@ -208,7 +30,6 @@ Use the duckdb_from_date/duckdb_to_date function to extract individual informati
 struct duckdb_date
     days::Int32
 end
-
 
 
 struct duckdb_date_struct
@@ -261,6 +82,10 @@ struct duckdb_timestamp_ms
 end
 
 struct duckdb_timestamp_ns
+    nanos::Int64
+end
+
+struct duckdb_time_ns
     nanos::Int64
 end
 

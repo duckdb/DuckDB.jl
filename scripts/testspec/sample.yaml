@@ -1,0 +1,105 @@
+module: sample
+handles:
+  thing:
+    status:
+      - ["frozen", "v1.5.4", "2026-05-18"]
+    description: "A sample handle. Must be destroyed with duckdb_destroy_thing."
+callbacks:
+  thing_delete_t:
+    status:
+      - ["frozen", "v1.5.4", "2026-05-18"]
+    return_type: opaque
+    description: "The callback to destroy a thing's extra data."
+    parameters:
+      data:
+        type: opaque
+        indirection: 1
+enums:
+  color:
+    status:
+      - ["frozen", "v1.5.4", "2026-05-18"]
+    description: "A sample enum. Values exercise auto-numbering and an explicit value."
+    values:
+      COLOR_RED: {}
+      COLOR_GREEN: {}
+      COLOR_BLUE: {value: 5}
+functions:
+  make_thing:
+    status:
+      - ["frozen", "v1.5.4", "2026-05-18"]
+    summary: Creates a thing.
+    parameters: {}
+    return_type: thing
+    description: Creates a thing.
+    return_description: The new thing.
+  thing_open:
+    status:
+      - ["frozen", "v1.5.4", "2026-05-18"]
+    summary: Opens a thing from a path.
+    parameters:
+      path:
+        type: char
+        indirection: 1
+        const: true
+        description: The path to open.
+      out_thing:
+        type: thing
+        indirection: 1
+        kind: OUT
+        description: The resulting thing.
+    return_type: state
+    description: Opens a thing from a path.
+    return_description: "`DuckDBSuccess` on success or `DuckDBError` on failure."
+  thing_get_column:
+    status:
+      - ["frozen", "v1.5.4", "2026-05-18"]
+    summary: Gets a column from a thing.
+    parameters:
+      thing:
+        type: thing
+        description: The thing.
+      col:
+        type: idx
+        description: The column index.
+    return_type: i32
+    description: Gets a column from a thing.
+    return_description: The column value.
+  append_blob:
+    status:
+      - ["frozen", "v1.5.4", "2026-05-18"]
+    summary: Appends a blob to a thing.
+    parameters:
+      appender:
+        type: thing
+        description: The appender thing.
+      data:
+        type: opaque
+        indirection: 1
+        description: The blob data.
+      length:
+        type: idx
+        description: The number of bytes.
+    return_type: state
+    description: Appends a blob to a thing.
+    return_description: "`DuckDBSuccess` on success or `DuckDBError` on failure."
+  old_thing:
+    status:
+      - ["deprecated", "v1.5.0", "2026-01-01"]
+      - ["frozen", "v1.4.0", "2025-01-01"]
+    summary: An old thing.
+    parameters:
+      thing:
+        type: thing
+        description: The thing.
+    return_type: opaque
+    description: "**DEPRECATION NOTICE**: An old thing. Use make_thing instead."
+  frozen_thing:
+    status:
+      - ["frozen", "v1.5.4", "2026-05-18"]
+    summary: A frozen thing.
+    parameters:
+      thing:
+        type: thing
+        description: The thing.
+    return_type: opaque
+    description: "**DEPRECATION NOTICE**: A frozen thing carrying deprecation-notice prose but no structured deprecation."
