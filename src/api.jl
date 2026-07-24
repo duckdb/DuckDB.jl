@@ -4106,25 +4106,25 @@ function duckdb_log_storage_set_write_log_entry(log_storage, _function)
 end
 
 """
-    duckdb_log_storage_set_extra_data(log_storage, extra_data, destroy)
+    duckdb_log_storage_set_extra_data(log_storage, extra_data, delete_callback)
 
 Sets the extra data of the custom log storage.
 
 # Arguments
 - `log_storage`: `duckdb_log_storage` The log storage object.
 - `extra_data`: `Ref{Cvoid}` The extra data that is passed back into the callbacks.
-- `destroy`: `duckdb_delete_callback_t`
+- `delete_callback`: `duckdb_delete_callback_t`
 
 Returns: `Nothing`
 """
-function duckdb_log_storage_set_extra_data(log_storage, extra_data, destroy)
+function duckdb_log_storage_set_extra_data(log_storage, extra_data, delete_callback)
     return ccall(
         (:duckdb_log_storage_set_extra_data, libduckdb),
         Cvoid,
         (duckdb_log_storage, Ref{Cvoid}, duckdb_delete_callback_t),
         log_storage,
         extra_data,
-        destroy
+        delete_callback
     )
 end
 
