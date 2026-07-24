@@ -13,16 +13,16 @@ wheels = [
 
 [[package]]
 name = "capigen"
-version = "0.4.0"
+version = "0.5.0"
 source = { registry = "https://pypi.org/simple" }
 dependencies = [
     { name = "jinja2" },
     { name = "jsonschema" },
     { name = "pyyaml" },
 ]
-sdist = { url = "https://files.pythonhosted.org/packages/48/fa/1abd2b431e0209c9ff98ec7ad5c25921158430ca4baaa7f01e0147074929/capigen-0.4.0.tar.gz", hash = "sha256:64ada65ef2b1bac55c275318305d399e6bff1c19a9c5d557cf893bba6d8f9297", size = 50821, upload-time = "2026-07-18T08:13:24.496Z" }
+sdist = { url = "https://files.pythonhosted.org/packages/33/58/773b26c9d4a5ca00475ffcb7bbc1ec6fc2e1b33d4533cd0629e348288fe3/capigen-0.5.0.tar.gz", hash = "sha256:4caa18b32e3d1a545349d4fe2dc2854c440cab90ea1d0c5dd547a6c0fc8245ca", size = 78121, upload-time = "2026-07-23T16:33:18.824Z" }
 wheels = [
-    { url = "https://files.pythonhosted.org/packages/68/b4/a4de0472710e798e8946689fbe2a97b3595fb3974c7ba047e6eb67fae9dd/capigen-0.4.0-py3-none-any.whl", hash = "sha256:07dc605d40778fc10320b930e8d37e718a279a82eec46a05cad26ed384861584", size = 34961, upload-time = "2026-07-18T08:13:23.412Z" },
+    { url = "https://files.pythonhosted.org/packages/9e/ab/5ea726b3dc1e0808811e8aa75b73ec67e01a8aaccb38a50fd7f8a3194bd4/capigen-0.5.0-py3-none-any.whl", hash = "sha256:0bc55b53f18669163b359511f55387c838109f3db95a0e4570c52c1e25e5eb10", size = 47808, upload-time = "2026-07-23T16:33:17.399Z" },
 ]
 
 [[package]]
@@ -48,7 +48,7 @@ dev = [
 ]
 
 [package.metadata]
-requires-dist = [{ name = "capigen", specifier = "~=0.4.0" }]
+requires-dist = [{ name = "capigen", specifier = "~=0.5.0" }]
 
 [package.metadata.requires-dev]
 dev = [{ name = "pytest", specifier = ">=8.0" }]

@@ -1,12 +1,12 @@
 module: sample
 handles:
   thing:
-    status:
+    lifecycle:
       - ["frozen", "v1.5.4", "2026-05-18"]
     description: "A sample handle. Must be destroyed with duckdb_destroy_thing."
 callbacks:
   thing_delete_t:
-    status:
+    lifecycle:
       - ["frozen", "v1.5.4", "2026-05-18"]
     return_type: opaque
     description: "The callback to destroy a thing's extra data."
@@ -16,7 +16,7 @@ callbacks:
         indirection: 1
 enums:
   color:
-    status:
+    lifecycle:
       - ["frozen", "v1.5.4", "2026-05-18"]
     description: "A sample enum. Values exercise auto-numbering and an explicit value."
     values:
@@ -25,17 +25,15 @@ enums:
       COLOR_BLUE: {value: 5}
 functions:
   make_thing:
-    status:
+    lifecycle:
       - ["frozen", "v1.5.4", "2026-05-18"]
-    summary: Creates a thing.
     parameters: {}
     return_type: thing
     description: Creates a thing.
     return_description: The new thing.
   thing_open:
-    status:
+    lifecycle:
       - ["frozen", "v1.5.4", "2026-05-18"]
-    summary: Opens a thing from a path.
     parameters:
       path:
         type: char
@@ -51,9 +49,8 @@ functions:
     description: Opens a thing from a path.
     return_description: "`DuckDBSuccess` on success or `DuckDBError` on failure."
   thing_get_column:
-    status:
+    lifecycle:
       - ["frozen", "v1.5.4", "2026-05-18"]
-    summary: Gets a column from a thing.
     parameters:
       thing:
         type: thing
@@ -65,9 +62,8 @@ functions:
     description: Gets a column from a thing.
     return_description: The column value.
   append_blob:
-    status:
+    lifecycle:
       - ["frozen", "v1.5.4", "2026-05-18"]
-    summary: Appends a blob to a thing.
     parameters:
       appender:
         type: thing
@@ -83,10 +79,9 @@ functions:
     description: Appends a blob to a thing.
     return_description: "`DuckDBSuccess` on success or `DuckDBError` on failure."
   old_thing:
-    status:
+    lifecycle:
       - ["deprecated", "v1.5.0", "2026-01-01"]
       - ["frozen", "v1.4.0", "2025-01-01"]
-    summary: An old thing.
     parameters:
       thing:
         type: thing
@@ -94,9 +89,8 @@ functions:
     return_type: opaque
     description: "**DEPRECATION NOTICE**: An old thing. Use make_thing instead."
   frozen_thing:
-    status:
+    lifecycle:
       - ["frozen", "v1.5.4", "2026-05-18"]
-    summary: A frozen thing.
     parameters:
       thing:
         type: thing
