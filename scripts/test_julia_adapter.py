@@ -1,12 +1,13 @@
-"""Tests for the Julia adapter (julia_adapter.generate).
+"""Tests for the Julia binding generator (julia_adapter.generate).
 
-Black-box: build spec dicts in Python (mirroring capigen's own test fixtures) or
-load the checked-in testspec, run generate, and assert on the emitted lines. The
-direct-dict cases supply the fields the loader would have defaulted (indirection,
-return_pointer, empty parameters); the golden test exercises the real load path.
+Black-box: build spec dicts in Python (supplying the fields the loader would
+have defaulted) or load the checked-in testspec, run generate, and assert on
+the emitted lines. The golden tests exercise the real load path.
 """
 
 from pathlib import Path
+
+import pytest
 
 from capigen.loader import load_metadata, load_modules
 from capigen.validate import validate_semantics
@@ -15,17 +16,26 @@ import julia_adapter
 
 TESTSPEC = Path(__file__).parent / "testspec"
 
+UNSTABLE = [["unstable", "v1.2.0", "2026-01-01"]]
+REMOVED = [["removed", "v1.2.0", "2026-01-01"]]
+
 
 # ---------------------------------------------------------------------------
-# Fixtures / builders (mirror capigen tests: _make_module / metadata / _fn)
+# Fixtures / builders
 # ---------------------------------------------------------------------------
 
 
 def _meta(**over):
     m = {
-        "schema_version": "0.4",
+        "schema_version": "0.5",
         "prefix": "duckdb_",
-        "versions": ["1.2.0"],
+        "versions": ["v1.2.0"],
+        "lifecycle_states": {
+            "unstable": {"visibility": "opt_in", "guard": "DUCKDB_API_UNSTABLE"},
+            "frozen": {"visibility": "always"},
+            "deprecated": {"visibility": "opt_out", "guard": "DUCKDB_API_NO_DEPRECATED"},
+            "removed": {"visibility": "never"},
+        },
         "suffixes": {"handles": "", "callbacks": "", "aliases": ""},
         "primitives": [
             {"name": "void", "c_type": "void"},
@@ -37,7 +47,6 @@ def _meta(**over):
             {"name": "u32", "c_type": "uint32_t"},
             {"name": "state", "c_type": "duckdb_state"},
         ],
-        "options": {"extension": {"api_version": "v1.2.0"}},
     }
     m.update(over)
     return m
@@ -108,14 +117,14 @@ def _block(text, name):
 
 
 class TestDeprecation:
-    def test_structured_status_deprecated_emits_depwarn(self, tmp_path):
-        mod = _mod(functions={"gone": _fn(status=[["deprecated", "v1.5.0", "2026-01-01"]], description="Old.")})
+    def test_structured_lifecycle_deprecated_emits_depwarn(self, tmp_path):
+        mod = _mod(functions={"gone": _fn(lifecycle=[["deprecated", "v1.5.0", "2026-01-01"]], description="Old.")})
         body = _block(_gen(tmp_path, [mod]), "duckdb_gone")
         assert "Base.depwarn(" in body
         assert ":duckdb_gone" in body
 
-    def test_deprecated_flag_emits_depwarn(self, tmp_path):
-        mod = _mod(functions={"flagged": _fn(deprecated=True, description="Old.")})
+    def test_deprecated_field_emits_depwarn(self, tmp_path):
+        mod = _mod(functions={"flagged": _fn(deprecated="v1.5.0", description="Old.")})
         body = _block(_gen(tmp_path, [mod]), "duckdb_flagged")
         assert "Base.depwarn(" in body
         assert ":duckdb_flagged" in body
@@ -123,12 +132,12 @@ class TestDeprecation:
     def test_frozen_with_notice_prose_emits_no_depwarn(self, tmp_path):
         # LOAD-BEARING. This function is frozen (not structurally deprecated) yet its
         # description contains "**DEPRECATION NOTICE**:". Deprecation is driven by the
-        # structured status/deprecated field, not the prose. A naive implementation
+        # structured lifecycle/deprecated field, not the prose. A naive implementation
         # that scanned the description text would WRONGLY emit a depwarn and fail here.
         mod = _mod(
             functions={
                 "kept": _fn(
-                    status=[["frozen", "v1.5.4", "2026-05-18"]],
+                    lifecycle=[["frozen", "v1.5.4", "2026-05-18"]],
                     description="**DEPRECATION NOTICE**: scheduled for removal.",
                 )
             }
@@ -137,6 +146,46 @@ class TestDeprecation:
         assert "Base.depwarn" not in body
         # The prose still reaches the docstring; only the depwarn is suppressed.
         assert "**DEPRECATION NOTICE**: scheduled for removal." in body
+
+
+# ---------------------------------------------------------------------------
+# Lifecycle states
+# ---------------------------------------------------------------------------
+
+
+class TestLifecycle:
+    def test_removed_function_is_skipped(self, tmp_path):
+        mod = _mod(functions={"live": _fn(return_type="i32"), "dead": _fn(lifecycle=REMOVED)})
+        text = _gen(tmp_path, [mod])
+        assert "duckdb_live" in text
+        assert "duckdb_dead" not in text
+
+    def test_unstable_function_is_skipped(self, tmp_path):
+        """Julia has no preprocessor: an opt-in construct cannot be opted into."""
+        mod = _mod(functions={"live": _fn(return_type="i32"), "exp": _fn(lifecycle=UNSTABLE)})
+        text = _gen(tmp_path, [mod])
+        assert "duckdb_live" in text
+        assert "duckdb_exp" not in text
+
+    def test_removed_and_unstable_types_are_skipped(self, tmp_path):
+        mod = _mod(
+            handles={"kept": {}, "gone": {"lifecycle": REMOVED}},
+            enums={
+                "color": {"values": {"COLOR_RED": {}}},
+                "mood": {"values": {"MOOD_A": {}}, "lifecycle": UNSTABLE},
+            },
+            functions={"f": _fn(return_type="i32")},
+        )
+        types = _gen_types(tmp_path, [mod])
+        assert "const duckdb_kept = Ptr{Cvoid}" in types
+        assert "duckdb_gone" not in types
+        assert "const duckdb_color" in types
+        assert "duckdb_mood" not in types
+
+    def test_module_with_only_skipped_functions_emits_no_group(self, tmp_path):
+        mod = _mod("ghost", functions={"dead": _fn(lifecycle=REMOVED)})
+        text = _gen(tmp_path, [mod])
+        assert "# Ghost" not in text
 
 
 # ---------------------------------------------------------------------------
@@ -280,14 +329,20 @@ class TestZeroArg:
 
 
 class TestApiVersionHeader:
-    def test_version_line_strips_leading_v_once(self, tmp_path):
+    def test_version_is_the_latest_spec_version(self, tmp_path):
         text = _gen(tmp_path, [_mod(functions={"f": _fn(return_type="i32")})])
         assert 'DUCKDB_API_VERSION = v"1.2.0"' in text
 
-    def test_version_without_v_prefix_is_used_verbatim(self, tmp_path):
-        meta = _meta(options={"extension": {"api_version": "2.0.0"}})
+    def test_latest_version_wins_numerically(self, tmp_path):
+        """Numeric comparison, not lexicographic: 1.10.0 beats 1.9.0."""
+        meta = _meta(versions=["v1.9.0", "v1.10.0"])
         text = _gen(tmp_path, [_mod(functions={"f": _fn(return_type="i32")})], meta)
-        assert 'DUCKDB_API_VERSION = v"2.0.0"' in text
+        assert 'DUCKDB_API_VERSION = v"1.10.0"' in text
+
+    def test_empty_versions_errors(self, tmp_path):
+        meta = _meta(versions=[])
+        with pytest.raises(ValueError, match="non-empty 'versions' list"):
+            julia_adapter.generate([_mod(functions={"f": _fn(return_type="i32")})], meta, tmp_path / "api.jl")
 
 
 # ---------------------------------------------------------------------------
@@ -355,6 +410,12 @@ class TestGeneratedTypes:
         assert "@enum DUCKDB_TYPE_::Cint begin" in types
         assert "    DUCKDB_TYPE_A = 0" in types
         assert "const duckdb_type = DUCKDB_TYPE_" in types
+
+    def test_no_width_sentinel_in_julia_enums(self, tmp_path):
+        """Julia enums are ::Cint by construction; the C sentinel is not mirrored."""
+        mod = _mod(enums={"color": {"values": {"COLOR_RED": {}}}}, functions={"f": _fn(return_type="i32")})
+        types = _gen_types(tmp_path, [mod])
+        assert "MAX_ENUM" not in types
 
 
 # ---------------------------------------------------------------------------

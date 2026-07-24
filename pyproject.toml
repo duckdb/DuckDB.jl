@@ -1,9 +1,9 @@
 [project]
 name = "duckdb-jl-codegen"
 version = "0.0.0"
-description = "Codegen tooling for DuckDB.jl: the capigen Julia adapter that generates src/api.jl and src/ctypes_generated.jl."
+description = "Codegen tooling for DuckDB.jl: the binding generator that renders src/api.jl and src/ctypes_generated.jl from the C API spec via capigen."
 requires-python = ">=3.12"
-dependencies = ["capigen~=0.4.0"]
+dependencies = ["capigen~=0.5.0"]
 
 [dependency-groups]
 dev = ["pytest>=8.0"]

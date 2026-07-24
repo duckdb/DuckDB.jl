@@ -31,7 +31,7 @@ if [[ -z "$SPEC_DIR" ]]; then
 fi
 
 echo "Regenerating api.jl + ctypes_generated.jl from $SPEC_DIR ..."
-PYTHONPATH=scripts uv run capigen julia_adapter --spec-dir "$SPEC_DIR" -o src/api.jl
+uv run python scripts/julia_adapter.py --spec-dir "$SPEC_DIR" -o src/api.jl
 
 echo "Formatting..."
 ./format.sh

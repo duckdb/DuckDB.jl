@@ -1,7 +1,10 @@
-schema_version: "0.4"
+schema_version: "0.5"
 versions:
-  - "1.2.0"
+  - "v1.2.0"
 prefix: "duckdb_"
+lifecycle_states:
+  frozen: {visibility: always}
+  deprecated: {visibility: opt_out, guard: SAMPLE_API_NO_DEPRECATED}
 suffixes:
   handles: ""
   callbacks: ""
@@ -22,11 +25,3 @@ primitives:
     c_type: int32_t
   - name: state
     c_type: duckdb_state
-options:
-  extension:
-    unstable_guard: SAMPLE_API_UNSTABLE
-    create_method: CreateSampleAPI
-    api_version: "v1.2.0"
-    version_macro_prefix: SAMPLE_API_VERSION
-    internal_include: sample.h
-    exclude: []
