@@ -80,11 +80,18 @@ mutable struct DB <: DBInterface.Connection
     function DB(f::AbstractString, config::Config)
         config["threads"] = string(Threads.nthreads())
         config["external_threads"] = string(Threads.nthreads()) # all threads are external
+        ext_dirs = extension_directories()
+        if !isempty(ext_dirs) && !haskey(config, "allow_unsigned_extensions")
+            # extensions shipped by Julia packages are not signed by DuckDB;
+            # this can only be set before the database is opened
+            config["allow_unsigned_extensions"] = "true"
+        end
         handle = DuckDBHandle(f, config)
         main_connection = Connection(handle)
 
         db = new(handle, main_connection)
         _add_table_scan(db)
+        _load_registered_extensions(db, config, ext_dirs)
         return db
     end
 
