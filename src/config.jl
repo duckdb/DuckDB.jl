@@ -3,12 +3,15 @@ Configuration object
 """
 mutable struct Config
     handle::duckdb_config
+    # options set through this object, so that DuckDB.jl can tell which
+    # settings the user chose explicitly
+    options::Dict{String, String}
 
     function Config(args...; kwargs...)
         handle = Ref{duckdb_connection}()
         duckdb_create_config(handle)
 
-        result = new(handle[])
+        result = new(handle[], Dict{String, String}())
         finalizer(_destroy_config, result)
 
         _fill_config!(result, args...; kwargs...)
@@ -31,7 +34,11 @@ function Base.setindex!(config::Config, option::AbstractString, name::AbstractSt
     if duckdb_set_config(config.handle, name, option) != DuckDBSuccess
         throw(QueryException(string("Unrecognized configuration option \"", name, "\"")))
     end
+    config.options[lowercase(name)] = option
+    return option
 end
+
+Base.haskey(config::Config, name::AbstractString) = haskey(config.options, lowercase(name))
 
 @deprecate set_config(config::Config, name::AbstractString, option::AbstractString) setindex!(config, option, name)
 

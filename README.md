@@ -56,6 +56,26 @@ results = DBInterface.execute(con, "SELECT * FROM my_df")
 print(results)
 ```
 
+## Extensions
+
+DuckDB extensions can be installed and loaded as usual with `INSTALL` and `LOAD`, which downloads them from the DuckDB extension repository on first use.
+
+Some extensions are also available as Julia packages, built together with `DuckDB_jll` so that they always match the bundled `libduckdb` exactly and can be installed offline through the Julia package manager. Add the package to your environment and load it next to DuckDB:
+
+```julia
+pkg> add DuckDB_excel_jll
+
+julia> using DuckDB, DuckDB_excel_jll
+
+julia> con = DBInterface.connect(DuckDB.DB)
+
+julia> DBInterface.execute(con, "SELECT * FROM read_xlsx('data.xlsx')")
+```
+
+Every database opened after the extension package is loaded has the extension loaded already; an explicit `LOAD excel` is accepted but not required. Because such extensions are not signed by DuckDB, DuckDB.jl opens these databases with `allow_unsigned_extensions` enabled unless you set that option yourself.
+
+Extension packages register their directory with `DuckDB.add_extension_directory!`. You can use the same function to register your own directory of `.duckdb_extension` files, laid out as `<dir>/<duckdb version>/<duckdb platform>/<name>.duckdb_extension`.
+
 ## Original Julia Connector
 Credits to kimmolinna for the [original DuckDB Julia connector](https://github.com/kimmolinna/DuckDB.jl).
 

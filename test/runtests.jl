@@ -11,6 +11,7 @@ test_files = [
     "test_basic_queries.jl",
     "test_big_nested.jl",
     "test_config.jl",
+    "test_extensions.jl",
     "test_connection.jl",
     "test_tbl_scan.jl",
     "test_prepare.jl",
